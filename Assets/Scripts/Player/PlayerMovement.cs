@@ -51,6 +51,19 @@ public class PlayerMovement : MonoBehaviour
             cameraTransform = Camera.main.transform;
     }
 
+    // Called by SoulSplitManager when the anchor resolves — the soul is always
+    // anchored on the ground, so the body is guaranteed to arrive grounded.
+    public void ForceGrounded()
+    {
+        isGrounded = true;
+        landingAnticipated = false;
+        animator.SetBool("IsGrounded", true);
+        animator.ResetTrigger("StartFalling");
+        animator.ResetTrigger("PreLand");
+        animator.ResetTrigger("LandComplete");
+        animator.Play("2D Blend Tree", 0, 0f);
+    }
+
     private void OnDestroy()
     {
         playerInputActions.Dispose();

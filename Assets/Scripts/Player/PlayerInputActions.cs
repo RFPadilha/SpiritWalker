@@ -118,6 +118,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""SoulWalk"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1d2e3f4-a5b6-7890-cdef-012345678901"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SoulAnchor"",
+                    ""type"": ""Button"",
+                    ""id"": ""d2e3f4a5-b6c7-8901-defa-123456789012"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -197,6 +215,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e3f4a5b6-c7d8-9012-efab-234567890123"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard/Mouse"",
+                    ""action"": ""SoulWalk"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f4a5b6c7-d8e9-0123-fabc-345678901234"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard/Mouse"",
+                    ""action"": ""SoulAnchor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -225,6 +265,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Game_Movement = m_Game.FindAction("Movement", throwIfNotFound: true);
         m_Game_Jump = m_Game.FindAction("Jump", throwIfNotFound: true);
         m_Game_Look = m_Game.FindAction("Look", throwIfNotFound: true);
+        m_Game_SoulWalk = m_Game.FindAction("SoulWalk", throwIfNotFound: true);
+        m_Game_SoulAnchor = m_Game.FindAction("SoulAnchor", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -308,6 +350,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Movement;
     private readonly InputAction m_Game_Jump;
     private readonly InputAction m_Game_Look;
+    private readonly InputAction m_Game_SoulWalk;
+    private readonly InputAction m_Game_SoulAnchor;
     /// <summary>
     /// Provides access to input actions defined in input action map "Game".
     /// </summary>
@@ -331,6 +375,14 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Game/Look".
         /// </summary>
         public InputAction @Look => m_Wrapper.m_Game_Look;
+        /// <summary>
+        /// Provides access to the underlying input action "Game/SoulWalk".
+        /// </summary>
+        public InputAction @SoulWalk => m_Wrapper.m_Game_SoulWalk;
+        /// <summary>
+        /// Provides access to the underlying input action "Game/SoulAnchor".
+        /// </summary>
+        public InputAction @SoulAnchor => m_Wrapper.m_Game_SoulAnchor;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -366,6 +418,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
+            @SoulWalk.started += instance.OnSoulWalk;
+            @SoulWalk.performed += instance.OnSoulWalk;
+            @SoulWalk.canceled += instance.OnSoulWalk;
+            @SoulAnchor.started += instance.OnSoulAnchor;
+            @SoulAnchor.performed += instance.OnSoulAnchor;
+            @SoulAnchor.canceled += instance.OnSoulAnchor;
         }
 
         /// <summary>
@@ -386,6 +444,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
+            @SoulWalk.started -= instance.OnSoulWalk;
+            @SoulWalk.performed -= instance.OnSoulWalk;
+            @SoulWalk.canceled -= instance.OnSoulWalk;
+            @SoulAnchor.started -= instance.OnSoulAnchor;
+            @SoulAnchor.performed -= instance.OnSoulAnchor;
+            @SoulAnchor.canceled -= instance.OnSoulAnchor;
         }
 
         /// <summary>
@@ -460,5 +524,19 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLook(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SoulWalk" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSoulWalk(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SoulAnchor" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSoulAnchor(InputAction.CallbackContext context);
     }
 }

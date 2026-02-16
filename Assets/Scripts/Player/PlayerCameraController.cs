@@ -16,8 +16,17 @@ public class PlayerCameraController : MonoBehaviour
     [Header("Follow")]
     [SerializeField] float followSmoothing = 15f;
 
-    // Read by PlayerMovement to rotate the character to match camera yaw
+    // Read by PlayerMovement / SoulController to rotate the character to match camera yaw
     public float Yaw => yaw;
+
+    // Called by SoulSplitManager when switching control between body and soul
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+        // Snap follow position so the camera doesn't lerp from the old target
+        if (newTarget != null)
+            currentFollowPos = newTarget.position;
+    }
 
     private PlayerInputActions playerInputActions;
     private float yaw;
@@ -56,8 +65,8 @@ public class PlayerCameraController : MonoBehaviour
         pitch -= lookDelta.y * sensitivity; // subtract: mouse up → camera up
         pitch  = Mathf.Clamp(pitch, pitchMin, pitchMax);
 
-        // Smooth-follow the target so the camera doesn't jerk on physics steps
-        currentFollowPos = Vector3.Lerp(currentFollowPos, target.position, followSmoothing * Time.deltaTime);
+        // Smooth-follow the target — unscaled so camera stays responsive during time slow
+        currentFollowPos = Vector3.Lerp(currentFollowPos, target.position, followSmoothing * Time.unscaledDeltaTime);
 
         // Orbit position: start directly behind the pivot, then rotate by yaw/pitch
         Vector3 pivot    = currentFollowPos + pivotOffset;
