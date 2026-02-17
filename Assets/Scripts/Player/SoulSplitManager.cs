@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class SoulSplitManager : MonoBehaviour
 {
@@ -20,11 +21,24 @@ public class SoulSplitManager : MonoBehaviour
     [Tooltip("Real-world seconds before the body teleports to the anchored soul")]
     [SerializeField] float soulAnchorDuration = 3f;
 
+    [Header("Visuals — Soul Tether")]
+    [SerializeField] SoulTether soulTether;
+
+    [Header("Visuals — Otherworldly Filter")]
+    [SerializeField] Volume soulVisionVolume;
+    [Tooltip("How fast the post-processing filter fades in/out (units per real-world second)")]
+    [SerializeField] float volumeFadeSpeed = 4f;
+
+    [Header("Visuals — Ability Timer")]
+    [SerializeField] AbilityTimerUI abilityTimerUI;
+
     public SoulState State => state;
 
     private PlayerInputActions playerInputActions;
     private SoulState state = SoulState.Unified;
     private float timer;
+    private float timerDuration;
+    private float targetVolumeWeight;
     private Rigidbody soulRb;
     private RigidbodyConstraints soulDefaultConstraints;
 
@@ -45,6 +59,9 @@ public class SoulSplitManager : MonoBehaviour
         soul.Initialize(cameraController);
         soul.gameObject.SetActive(false);
 
+        if (soulVisionVolume != null)
+            soulVisionVolume.weight = 0f;
+
         // Ignore all collisions between body and soul so overlapping on spawn
         // doesn't produce a physics impulse that launches either character
         foreach (var bc in body.GetComponentsInChildren<Collider>(true))
@@ -60,16 +77,20 @@ public class SoulSplitManager : MonoBehaviour
 
     private void Update()
     {
+        UpdateVolumeWeight();
+
         switch (state)
         {
             case SoulState.SoulWalking:
                 timer -= Time.unscaledDeltaTime;
+                UpdateTimerUI();
                 if (timer <= 0f && soul.IsGrounded)
                     CompleteSoulWalk();
                 break;
 
             case SoulState.SoulAnchored:
                 timer -= Time.unscaledDeltaTime;
+                UpdateTimerUI();
                 if (timer <= 0f)
                     CompleteSoulAnchor();
                 break;
@@ -106,6 +127,8 @@ public class SoulSplitManager : MonoBehaviour
 
         state = SoulState.SoulWalking;
         timer = soulWalkDuration;
+        timerDuration = soulWalkDuration;
+        ActivateVisuals();
     }
 
     private void CompleteSoulWalk()
@@ -141,6 +164,8 @@ public class SoulSplitManager : MonoBehaviour
         FreezeSoul();
         state = SoulState.SoulAnchored;
         timer = soulAnchorDuration;
+        timerDuration = soulAnchorDuration;
+        ActivateVisuals();
     }
 
     private void CompleteSoulAnchor()
@@ -158,6 +183,37 @@ public class SoulSplitManager : MonoBehaviour
     {
         if (state == SoulState.Unified) return;
         ReturnToUnified();
+    }
+
+    // -------------------------------------------------------------------------
+    // Visuals
+    // -------------------------------------------------------------------------
+    private void ActivateVisuals()
+    {
+        targetVolumeWeight = 1f;
+        if (soulTether != null) soulTether.Activate(body.transform, soul.transform);
+        if (abilityTimerUI != null) abilityTimerUI.Show();
+    }
+
+    private void DeactivateVisuals()
+    {
+        targetVolumeWeight = 0f;
+        if (soulTether != null) soulTether.Deactivate();
+        if (abilityTimerUI != null) abilityTimerUI.Hide();
+    }
+
+    private void UpdateVolumeWeight()
+    {
+        if (soulVisionVolume == null) return;
+        soulVisionVolume.weight = Mathf.MoveTowards(
+            soulVisionVolume.weight, targetVolumeWeight,
+            volumeFadeSpeed * Time.unscaledDeltaTime);
+    }
+
+    private void UpdateTimerUI()
+    {
+        if (abilityTimerUI != null && timerDuration > 0f)
+            abilityTimerUI.SetFill(Mathf.Clamp01(timer / timerDuration));
     }
 
     // -------------------------------------------------------------------------
@@ -189,6 +245,7 @@ public class SoulSplitManager : MonoBehaviour
 
     private void ReturnToUnified()
     {
+        DeactivateVisuals();
         UnfreezeSoul();
         soul.gameObject.SetActive(false);
         body.enabled = true;
