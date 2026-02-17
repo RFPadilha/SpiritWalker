@@ -11,6 +11,7 @@ public class SoulSplitManager : MonoBehaviour
     [SerializeField] PlayerMovement body;
     [SerializeField] SoulController soul;
     [SerializeField] PlayerCameraController cameraController;
+    [SerializeField] ParkourController parkourController;
 
     [Header("Ability 1 — Soul Walk")]
     [Tooltip("Real-world seconds the player controls the soul before the body snaps to it")]
@@ -139,6 +140,7 @@ public class SoulSplitManager : MonoBehaviour
 
     private void ActivateSoulWalk()
     {
+        if (parkourController != null) parkourController.ForceExit();
         PlaceSoulAtBody();
         soul.gameObject.SetActive(true); // SoulController.OnEnable runs here
 
@@ -179,6 +181,7 @@ public class SoulSplitManager : MonoBehaviour
 
     private void ActivateSoulAnchor()
     {
+        if (parkourController != null) parkourController.ForceExit();
         if (!body.IsGrounded) return;
         PlaceSoulAtBody();
         soul.gameObject.SetActive(true);

@@ -30,6 +30,9 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector2 MovementInput { get; private set; }
     public bool IsGrounded => isGrounded;
+    public Rigidbody Rb => rb;
+    public Animator Anim => animator;
+    public PlayerCameraController CamController => cameraController;
 
     private PlayerInputActions playerInputActions;
     private Rigidbody rb;
@@ -42,7 +45,7 @@ public class PlayerMovement : MonoBehaviour
     {
         playerInputActions = new PlayerInputActions();
         playerInputActions.Game.Enable();
-        playerInputActions.Game.Jump.performed += _ => jumpRequested = true;
+        playerInputActions.Game.Jump.performed += _ => { if (enabled) jumpRequested = true; };
 
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();

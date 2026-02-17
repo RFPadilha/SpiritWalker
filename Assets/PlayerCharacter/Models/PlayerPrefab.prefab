@@ -1113,6 +1113,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2148527249729089927}
   - component: {fileID: 8455235385297572677}
+  - component: {fileID: 1934874299305711144}
   - component: {fileID: 1579841351145760549}
   - component: {fileID: 7322875753825030393}
   - component: {fileID: 6438452603527185286}
@@ -1166,6 +1167,49 @@ MonoBehaviour:
   landingAnticipationDistance: 1
   animatorVelocityScale: 20
   animatorDampTime: 0.1
+--- !u!114 &1934874299305711144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3469589688276511223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 423394468ac5e9a4a9db66413034fbf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerMovement: {fileID: 8455235385297572677}
+  cameraController: {fileID: 0}
+  soulSplitManager: {fileID: 0}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  wallCheckDistance: 1
+  wallCheckHeight: 1
+  ledgeCheckUpOffset: 2.5
+  ledgeCheckDownDistance: 2.5
+  ledgeReachTolerance: 0.6
+  capsuleHeight: 1.35
+  wallRunMinSpeed: 4
+  wallRunMaxAngle: 30
+  hangOffset: 0.35
+  climbDuration: 0.8
+  climbArcHeight: 0.5
+  ledgeJumpAwayForce: 5
+  ledgeJumpUpForce: 6
+  shimmySpeed: 2
+  shimmySideCheckOffset: 0.5
+  wallRunSpeed: 8
+  wallRunUpKick: 3
+  wallRunGravity: 8
+  wallRunMaxDuration: 1.2
+  wallRunWallPush: 2
+  wallRunMaxFallSpeed: 4
+  wallJumpAwayForce: 6
+  wallJumpUpForce: 7
+  wallJumpForwardMomentum: 4
+  wallJumpDuration: 0.3
 --- !u!114 &1579841351145760549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1389,6 +1433,7 @@ GameObject:
   - component: {fileID: 8379235089892120983}
   - component: {fileID: 1572152660625484219}
   - component: {fileID: 6457685386399230624}
+  - component: {fileID: 6657352936610590308}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -1451,6 +1496,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerMovement: {fileID: 8455235385297572677}
+--- !u!114 &6657352936610590308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3858969928888633060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3c970736da088844b98419c1e9bf429, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parkourController: {fileID: 1934874299305711144}
 --- !u!1 &4190567141716987722
 GameObject:
   m_ObjectHideFlags: 0
