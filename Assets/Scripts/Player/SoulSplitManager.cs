@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
 public class SoulSplitManager : MonoBehaviour
 {
-    public enum SoulState { Unified, SoulWalking, SoulAnchored }
+    public enum SoulState { Unified, SoulWalking, SoulAnchored, Traversing }
 
     [Header("References")]
     [SerializeField] PlayerMovement body;
@@ -20,6 +21,10 @@ public class SoulSplitManager : MonoBehaviour
     [Header("Ability 2 — Soul Anchor")]
     [Tooltip("Real-world seconds before the body teleports to the anchored soul")]
     [SerializeField] float soulAnchorDuration = 3f;
+
+    [Header("Path Traversal")]
+    [Tooltip("Speed at which the body travels along the recorded path (units/sec)")]
+    [SerializeField] float traversalSpeed = 15f;
 
     [Header("Visuals — Soul Tether")]
     [SerializeField] SoulTether soulTether;
@@ -42,6 +47,14 @@ public class SoulSplitManager : MonoBehaviour
     private Rigidbody soulRb;
     private RigidbodyConstraints soulDefaultConstraints;
 
+    // Traversal
+    private Rigidbody bodyRb;
+    private Animator bodyAnimator;
+    private bool bodyDefaultIsKinematic;
+    private readonly List<Vector3> traversalWaypoints = new List<Vector3>();
+    private int traversalIndex;
+    private bool forceGroundedOnArrival;
+
     private void Awake()
     {
         playerInputActions = new PlayerInputActions();
@@ -55,6 +68,10 @@ public class SoulSplitManager : MonoBehaviour
     {
         soulRb = soul.GetComponent<Rigidbody>();
         soulDefaultConstraints = soulRb.constraints;
+
+        bodyRb = body.GetComponent<Rigidbody>();
+        bodyDefaultIsKinematic = bodyRb.isKinematic;
+        bodyAnimator = body.GetComponentInChildren<Animator>();
 
         soul.Initialize(cameraController);
         soul.gameObject.SetActive(false);
@@ -94,6 +111,10 @@ public class SoulSplitManager : MonoBehaviour
                 if (timer <= 0f)
                     CompleteSoulAnchor();
                 break;
+
+            case SoulState.Traversing:
+                UpdateTraversal();
+                break;
         }
     }
 
@@ -128,13 +149,13 @@ public class SoulSplitManager : MonoBehaviour
         state = SoulState.SoulWalking;
         timer = soulWalkDuration;
         timerDuration = soulWalkDuration;
-        ActivateVisuals();
+        ActivateVisuals(body.transform, soul.transform);
     }
 
     private void CompleteSoulWalk()
     {
-        TeleportBodyToSoul();
-        ReturnToUnified();
+        // Path goes anchor(body) → mover(soul): body follows it forward
+        BeginTraversal(reversePath: false, forceGrounded: false);
     }
 
     // -------------------------------------------------------------------------
@@ -165,14 +186,13 @@ public class SoulSplitManager : MonoBehaviour
         state = SoulState.SoulAnchored;
         timer = soulAnchorDuration;
         timerDuration = soulAnchorDuration;
-        ActivateVisuals();
+        ActivateVisuals(soul.transform, body.transform);
     }
 
     private void CompleteSoulAnchor()
     {
-        TeleportBodyToSoul();
-        body.ForceGrounded(); // soul was anchored on the ground, so body always arrives grounded
-        ReturnToUnified();
+        // Path goes anchor(soul) → mover(body): body retraces in reverse back to soul
+        BeginTraversal(reversePath: true, forceGrounded: true);
     }
 
     // -------------------------------------------------------------------------
@@ -186,12 +206,115 @@ public class SoulSplitManager : MonoBehaviour
     }
 
     // -------------------------------------------------------------------------
+    // Path Traversal
+    // Body moves along the recorded tether path instead of teleporting.
+    // -------------------------------------------------------------------------
+    private void BeginTraversal(bool reversePath, bool forceGrounded)
+    {
+        // Snapshot the recorded path
+        traversalWaypoints.Clear();
+        if (soulTether != null)
+        {
+            for (int i = 0; i < soulTether.Path.Count; i++)
+                traversalWaypoints.Add(soulTether.Path[i]);
+        }
+
+        if (reversePath)
+            traversalWaypoints.Reverse();
+
+        traversalIndex = 0;
+        forceGroundedOnArrival = forceGrounded;
+
+        // Freeze both characters: soul locked, body moved by us
+        FreezeSoul();
+        body.enabled = false;
+        bodyRb.linearVelocity = Vector3.zero;
+        bodyRb.angularVelocity = Vector3.zero;
+        bodyRb.isKinematic = true;
+
+        // Restore world time and follow the body
+        Time.timeScale = 1f;
+        cameraController.SetTarget(body.transform);
+
+        // Switch tether to traversal rendering (shrinking line)
+        if (soulTether != null) soulTether.BeginTraversal(reversePath);
+
+        // Hide the timer during traversal
+        if (abilityTimerUI != null) abilityTimerUI.Hide();
+
+        state = SoulState.Traversing;
+    }
+
+    private void UpdateTraversal()
+    {
+        if (traversalWaypoints.Count == 0)
+        {
+            FinishTraversal();
+            return;
+        }
+
+        // Move the body along waypoints, consuming as much distance as the frame allows
+        float step = traversalSpeed * Time.unscaledDeltaTime;
+
+        while (step > 0f && traversalIndex < traversalWaypoints.Count)
+        {
+            Vector3 target = traversalWaypoints[traversalIndex];
+            Vector3 toTarget = target - body.transform.position;
+            float dist = toTarget.magnitude;
+
+            if (dist <= step)
+            {
+                body.transform.position = target;
+                step -= dist;
+                traversalIndex++;
+            }
+            else
+            {
+                body.transform.position += toTarget.normalized * step;
+                step = 0f;
+            }
+        }
+
+        // Face movement direction
+        if (traversalIndex < traversalWaypoints.Count)
+        {
+            Vector3 lookDir = traversalWaypoints[traversalIndex] - body.transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
+                body.transform.rotation = Quaternion.LookRotation(lookDir);
+        }
+
+        // Drive the run animation on the body
+        if (bodyAnimator != null)
+        {
+            bodyAnimator.SetFloat("VelocityZ", 8f, 0.1f, Time.unscaledDeltaTime);
+            bodyAnimator.SetFloat("VelocityX", 0f, 0.1f, Time.unscaledDeltaTime);
+            bodyAnimator.SetBool("IsGrounded", true);
+        }
+
+        // Update tether visual to shrink as body progresses
+        if (soulTether != null)
+            soulTether.UpdateTraversalHead(traversalIndex, body.transform.position);
+
+        if (traversalIndex >= traversalWaypoints.Count)
+            FinishTraversal();
+    }
+
+    private void FinishTraversal()
+    {
+        bodyRb.isKinematic = bodyDefaultIsKinematic;
+        if (forceGroundedOnArrival)
+            body.ForceGrounded();
+        ReturnToUnified();
+    }
+
+    // -------------------------------------------------------------------------
     // Visuals
     // -------------------------------------------------------------------------
-    private void ActivateVisuals()
+    private void ActivateVisuals(Transform anchor, Transform mover)
     {
         targetVolumeWeight = 1f;
-        if (soulTether != null) soulTether.Activate(body.transform, soul.transform);
+        if (soulTether != null) soulTether.Activate(anchor, mover);
         if (abilityTimerUI != null) abilityTimerUI.Show();
     }
 
@@ -238,13 +361,11 @@ public class SoulSplitManager : MonoBehaviour
         soul.transform.SetPositionAndRotation(body.transform.position, body.transform.rotation);
     }
 
-    private void TeleportBodyToSoul()
-    {
-        body.transform.SetPositionAndRotation(soul.transform.position, soul.transform.rotation);
-    }
-
     private void ReturnToUnified()
     {
+        // Restore body physics in case we're coming from traversal
+        bodyRb.isKinematic = bodyDefaultIsKinematic;
+
         DeactivateVisuals();
         UnfreezeSoul();
         soul.gameObject.SetActive(false);
