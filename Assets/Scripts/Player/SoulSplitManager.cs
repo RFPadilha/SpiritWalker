@@ -32,8 +32,9 @@ public class SoulSplitManager : MonoBehaviour
     {
         playerInputActions = new PlayerInputActions();
         playerInputActions.Game.Enable();
-        playerInputActions.Game.SoulWalk.performed   += _ => TryActivateSoulWalk();
-        playerInputActions.Game.SoulAnchor.performed += _ => TryActivateSoulAnchor();
+        playerInputActions.Game.SoulWalk.performed      += _ => OnSoulWalkPressed();
+        playerInputActions.Game.SoulAnchor.performed     += _ => OnSoulAnchorPressed();
+        playerInputActions.Game.CancelAbility.performed  += _ => CancelActiveAbility();
     }
 
     private void Start()
@@ -79,11 +80,23 @@ public class SoulSplitManager : MonoBehaviour
     // Ability 1 — Soul Walk
     // Soul separates and the player navigates it. Body is frozen. World slows.
     // When the real-time duration expires AND the soul is grounded, body warps.
+    // Press Q again to complete early. Esc/Tab to cancel (body stays put).
     // -------------------------------------------------------------------------
-    private void TryActivateSoulWalk()
+    private void OnSoulWalkPressed()
     {
-        if (state != SoulState.Unified) return;
+        switch (state)
+        {
+            case SoulState.Unified:
+                ActivateSoulWalk();
+                break;
+            case SoulState.SoulWalking:
+                CompleteSoulWalk();
+                break;
+        }
+    }
 
+    private void ActivateSoulWalk()
+    {
         PlaceSoulAtBody();
         soul.gameObject.SetActive(true); // SoulController.OnEnable runs here
 
@@ -103,39 +116,29 @@ public class SoulSplitManager : MonoBehaviour
 
     // -------------------------------------------------------------------------
     // Ability 2 — Soul Anchor
-    // From SoulWalking: locks the soul in place (only if grounded), restores
-    //                   world time, and freezes the body. After the real-time
-    //                   duration, body warps to the anchored soul.
-    // From Unified:     plants the soul as a fixed beacon at the body's feet
-    //                   (only if grounded). Both freeze. Timer → body warps.
+    // Plants the soul as a fixed beacon at the body's feet (only if grounded).
+    // Body stays active. After the real-time duration, body warps to the soul.
+    // Press E again to complete early. Esc/Tab to cancel (body stays put).
     // -------------------------------------------------------------------------
-    private void TryActivateSoulAnchor()
+    private void OnSoulAnchorPressed()
     {
         switch (state)
         {
             case SoulState.Unified:
-                if (!body.IsGrounded) return;
-                PlaceSoulAtBody();
-                soul.gameObject.SetActive(true);
-                // Body stays active — soul is the fixed beacon, body navigates toward it
-                FreezeSoul();
-                EnterAnchorState();
+                ActivateSoulAnchor();
                 break;
-
-            case SoulState.SoulWalking:
-                if (!soul.IsGrounded) return;
-                // Soul locks in place; return body control and world time
-                Time.timeScale = 1f;
-                body.enabled = true;
-                cameraController.SetTarget(body.transform); // player navigates body to beacon
-                FreezeSoul();
-                EnterAnchorState();
+            case SoulState.SoulAnchored:
+                CompleteSoulAnchor();
                 break;
         }
     }
 
-    private void EnterAnchorState()
+    private void ActivateSoulAnchor()
     {
+        if (!body.IsGrounded) return;
+        PlaceSoulAtBody();
+        soul.gameObject.SetActive(true);
+        FreezeSoul();
         state = SoulState.SoulAnchored;
         timer = soulAnchorDuration;
     }
@@ -144,6 +147,16 @@ public class SoulSplitManager : MonoBehaviour
     {
         TeleportBodyToSoul();
         body.ForceGrounded(); // soul was anchored on the ground, so body always arrives grounded
+        ReturnToUnified();
+    }
+
+    // -------------------------------------------------------------------------
+    // Cancel — Esc / Tab
+    // Dismisses the soul and returns control to the body at its current position.
+    // -------------------------------------------------------------------------
+    private void CancelActiveAbility()
+    {
+        if (state == SoulState.Unified) return;
         ReturnToUnified();
     }
 

@@ -136,6 +136,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CancelAbility"",
+                    ""type"": ""Button"",
+                    ""id"": ""97581655-ae7c-4d2a-865e-c738fb68f7d6"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -237,6 +246,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""SoulAnchor"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4f936e79-60dc-4a2b-b95d-643e6da3c688"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard/Mouse"",
+                    ""action"": ""CancelAbility"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1924eb67-960e-4483-b141-ca39edc87ee3"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CancelAbility"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -267,6 +298,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Game_Look = m_Game.FindAction("Look", throwIfNotFound: true);
         m_Game_SoulWalk = m_Game.FindAction("SoulWalk", throwIfNotFound: true);
         m_Game_SoulAnchor = m_Game.FindAction("SoulAnchor", throwIfNotFound: true);
+        m_Game_CancelAbility = m_Game.FindAction("CancelAbility", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -352,6 +384,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Look;
     private readonly InputAction m_Game_SoulWalk;
     private readonly InputAction m_Game_SoulAnchor;
+    private readonly InputAction m_Game_CancelAbility;
     /// <summary>
     /// Provides access to input actions defined in input action map "Game".
     /// </summary>
@@ -383,6 +416,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Game/SoulAnchor".
         /// </summary>
         public InputAction @SoulAnchor => m_Wrapper.m_Game_SoulAnchor;
+        /// <summary>
+        /// Provides access to the underlying input action "Game/CancelAbility".
+        /// </summary>
+        public InputAction @CancelAbility => m_Wrapper.m_Game_CancelAbility;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -424,6 +461,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SoulAnchor.started += instance.OnSoulAnchor;
             @SoulAnchor.performed += instance.OnSoulAnchor;
             @SoulAnchor.canceled += instance.OnSoulAnchor;
+            @CancelAbility.started += instance.OnCancelAbility;
+            @CancelAbility.performed += instance.OnCancelAbility;
+            @CancelAbility.canceled += instance.OnCancelAbility;
         }
 
         /// <summary>
@@ -450,6 +490,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @SoulAnchor.started -= instance.OnSoulAnchor;
             @SoulAnchor.performed -= instance.OnSoulAnchor;
             @SoulAnchor.canceled -= instance.OnSoulAnchor;
+            @CancelAbility.started -= instance.OnCancelAbility;
+            @CancelAbility.performed -= instance.OnCancelAbility;
+            @CancelAbility.canceled -= instance.OnCancelAbility;
         }
 
         /// <summary>
@@ -538,5 +581,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSoulAnchor(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CancelAbility" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCancelAbility(InputAction.CallbackContext context);
     }
 }
