@@ -581,11 +581,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393f480529c5e774fb80ae2967197439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pointCount: 20
+  sampleDistance: 0.3
+  endpointOffset: {x: 0, y: 1.4, z: 0}
   noiseAmplitude: 0.5
   noiseFrequency: 2
   noiseScrollSpeed: 3
-  endpointOffset: {x: 0, y: 1.4, z: 0}
 --- !u!120 &446384017
 LineRenderer:
   serializedVersion: 2
@@ -1022,6 +1022,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SoulPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 7364327501454573682, guid: 5900d997aec24b64cac4cb5d21c52f25, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: ccae9d03023d24c499515bae8209c454, type: 2}
     - target: {fileID: 7940737287276075086, guid: 5900d997aec24b64cac4cb5d21c52f25, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1192,6 +1196,7 @@ MonoBehaviour:
   soulWalkDuration: 6
   timeSlowScale: 0.4
   soulAnchorDuration: 6
+  traversalSpeed: 15
   soulTether: {fileID: 446384016}
   soulVisionVolume: {fileID: 934522225}
   volumeFadeSpeed: 4
