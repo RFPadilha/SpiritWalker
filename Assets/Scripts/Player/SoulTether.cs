@@ -7,6 +7,8 @@ public class SoulTether : MonoBehaviour
     [SerializeField] float noiseAmplitude = 0.5f;
     [SerializeField] float noiseFrequency = 2f;
     [SerializeField] float noiseScrollSpeed = 3f;
+    [Tooltip("Local-space offset applied to each endpoint (e.g. Y=1.4 for neck height)")]
+    [SerializeField] Vector3 endpointOffset = new Vector3(0f, 1.4f, 0f);
 
     private LineRenderer lr;
     private Transform endpointA;
@@ -36,8 +38,8 @@ public class SoulTether : MonoBehaviour
     {
         if (endpointA == null || endpointB == null) return;
 
-        Vector3 start = endpointA.position;
-        Vector3 end = endpointB.position;
+        Vector3 start = endpointA.TransformPoint(endpointOffset);
+        Vector3 end = endpointB.TransformPoint(endpointOffset);
         Vector3 forward = end - start;
         float length = forward.magnitude;
 

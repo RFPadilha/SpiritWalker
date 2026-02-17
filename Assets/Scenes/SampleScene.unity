@@ -667,6 +667,7 @@ MonoBehaviour:
   noiseAmplitude: 0.5
   noiseFrequency: 2
   noiseScrollSpeed: 3
+  endpointOffset: {x: 0, y: 1.4, z: 0}
 --- !u!120 &446384017
 LineRenderer:
   serializedVersion: 2
@@ -839,7 +840,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.4039216, g: 0.627451, b: 0.6745098, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1334,6 +1335,14 @@ PrefabInstance:
     - target: {fileID: 3469589688276511223, guid: b283187e2f6e6ab4ab20ced4561b9262, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 6438452603527185286, guid: b283187e2f6e6ab4ab20ced4561b9262, type: 3}
+      propertyPath: m_Height
+      value: 1.7512927
+      objectReference: {fileID: 0}
+    - target: {fileID: 6438452603527185286, guid: b283187e2f6e6ab4ab20ced4561b9262, type: 3}
+      propertyPath: m_Center.y
+      value: 0.8728955
       objectReference: {fileID: 0}
     - target: {fileID: 8455235385297572677, guid: b283187e2f6e6ab4ab20ced4561b9262, type: 3}
       propertyPath: cameraTransform
