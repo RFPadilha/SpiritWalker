@@ -340,6 +340,26 @@ public class SoulSplitManager : MonoBehaviour
     }
 
     // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Immediately cancels any active soul ability and returns to the Unified state.
+    /// Safe to call from any state, including Traversing. Used by the respawn system.
+    /// </summary>
+    public void ForceReset()
+    {
+        if (state == SoulState.Unified) return;
+
+        // During traversal the body is kinematic — restore it before ReturnToUnified
+        // so that the subsequent physics teleport lands correctly.
+        if (state == SoulState.Traversing)
+            bodyRb.isKinematic = bodyDefaultIsKinematic;
+
+        ReturnToUnified();
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
     private void FreezeSoul()
