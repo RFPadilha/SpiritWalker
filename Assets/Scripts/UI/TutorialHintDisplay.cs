@@ -12,37 +12,62 @@ using UnityEngine.UI;
 /// </summary>
 public class TutorialHintDisplay : MonoBehaviour
 {
-    public static TutorialHintDisplay Instance { get; private set; }
+    // Auto-creates the display the first time it is needed, so no manual
+    // scene setup is required — place the component or let it bootstrap itself.
+    private static TutorialHintDisplay instance;
+    public static TutorialHintDisplay Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                var go = new GameObject("TutorialHintDisplay");
+                instance = go.AddComponent<TutorialHintDisplay>();
+            }
+            return instance;
+        }
+    }
 
     [SerializeField] float fadeSpeed = 4f;
 
-    private CanvasGroup  canvasGroup;
+    private CanvasGroup     canvasGroup;
     private TextMeshProUGUI label;
-    private Coroutine    fadeCoroutine;
+    private Coroutine       fadeCoroutine;
+    private TutorialHintZone currentOwner;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        if (instance != null && instance != this) { Destroy(gameObject); return; }
+        instance = this;
         BuildCanvas();
     }
 
     private void OnDestroy()
     {
-        if (Instance == this) Instance = null;
+        if (instance == this) instance = null;
     }
 
     // -------------------------------------------------------------------------
     // Public API
     // -------------------------------------------------------------------------
 
-    public void Show(string message)
+    /// <summary>Shows a hint and records <paramref name="owner"/> as the active zone.
+    /// Any previous hint is immediately replaced.</summary>
+    public void Show(string message, TutorialHintZone owner)
     {
-        label.text = message;
+        currentOwner = owner;
+        label.text   = message;
         FadeTo(1f);
     }
 
-    public void Hide() => FadeTo(0f);
+    /// <summary>Hides the hint only if <paramref name="requester"/> is still the active owner.
+    /// Prevents a zone that was superseded from blanking out a newer hint.</summary>
+    public void Hide(TutorialHintZone requester)
+    {
+        if (requester != currentOwner) return;
+        currentOwner = null;
+        FadeTo(0f);
+    }
 
     // -------------------------------------------------------------------------
     // Internals

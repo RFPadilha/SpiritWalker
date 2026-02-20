@@ -67,6 +67,7 @@ public class SoulController : MonoBehaviour
     {
         isGrounded = true;
         landingAnticipated = false;
+        jumpRequested = false;
 
         if (rb != null)
             rb.linearVelocity = Vector3.zero;

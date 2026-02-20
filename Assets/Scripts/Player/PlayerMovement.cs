@@ -64,6 +64,11 @@ public class PlayerMovement : MonoBehaviour
         animator.Play("2D Blend Tree", 0, 0f);
     }
 
+    private void OnEnable()
+    {
+        jumpRequested = false;
+    }
+
     private void OnDestroy()
     {
         playerInputActions.Dispose();

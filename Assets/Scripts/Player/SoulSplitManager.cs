@@ -37,6 +37,8 @@ public class SoulSplitManager : MonoBehaviour
     [Header("Visuals — Ability Timer")]
     [SerializeField] AbilityTimerUI abilityTimerUI;
 
+    public static SoulSplitManager Instance { get; private set; }
+
     public SoulState State => state;
 
     private PlayerInputActions playerInputActions;
@@ -57,6 +59,7 @@ public class SoulSplitManager : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         playerInputActions = new PlayerInputActions();
         playerInputActions.Game.Enable();
         playerInputActions.Game.SoulWalk.performed      += _ => OnSoulWalkPressed();
@@ -88,6 +91,7 @@ public class SoulSplitManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         playerInputActions.Dispose();
         Time.timeScale = 1f;
     }
