@@ -17,6 +17,10 @@ public class SoulController : MonoBehaviour
     [Tooltip("0 = no gravity, 1 = full gravity. Soul is intentionally lighter than the body.")]
     [SerializeField] float gravityMultiplier = 0.35f;
 
+    [Header("Jump")]
+    [Tooltip("Vertical impulse on jump. With 0.35× gravity the soul reaches ~9 units — enough for the Spirit Pillar.")]
+    [SerializeField] float jumpForce = 8f;
+
     [Header("Ground Check")]
     [SerializeField] float groundCheckRadius = 0.25f;
     [SerializeField] float landingAnticipationDistance = 0.6f;
@@ -34,6 +38,7 @@ public class SoulController : MonoBehaviour
     private PlayerCameraController cameraController;
     private bool isGrounded;
     private bool landingAnticipated;
+    private bool jumpRequested;
 
     public void Initialize(PlayerCameraController cam)
     {
@@ -50,6 +55,7 @@ public class SoulController : MonoBehaviour
 
         playerInputActions = new PlayerInputActions();
         playerInputActions.Game.Enable();
+        playerInputActions.Game.Jump.performed += _ => jumpRequested = true;
     }
 
     private void OnDestroy()
@@ -87,8 +93,23 @@ public class SoulController : MonoBehaviour
         ApplyGravity();
         CheckGround();
         CheckLandingAnticipation();
+        ApplyJump();
         ApplyMovement();
         UpdateAnimator();
+    }
+
+    private void ApplyJump()
+    {
+        if (jumpRequested && isGrounded)
+            animator.SetTrigger("Jump"); // SoulAnimationEvents.OnJumpLaunch applies the force
+
+        jumpRequested = false;
+    }
+
+    // Called by SoulAnimationEvents.OnJumpLaunch at the exact launch frame of the jump animation.
+    public void ApplyJumpForce()
+    {
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
     }
 
     private void ApplyGravity()

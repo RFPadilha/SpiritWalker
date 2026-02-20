@@ -6,15 +6,17 @@ using UnityEngine;
 // when the shared animation clips fire their events on the soul's Animator.
 public class SoulAnimationEvents : MonoBehaviour
 {
-    private Animator animator;
+    private Animator      animator;
+    private SoulController soulController;
 
     private void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator       = GetComponent<Animator>();
+        soulController = GetComponentInParent<SoulController>();
     }
 
-    // --- Jump.anim events (soul doesn't jump — stubs prevent Unity warnings) ---
-    public void OnJumpLaunch() { }
+    // --- Jump.anim events ---
+    public void OnJumpLaunch() => soulController?.ApplyJumpForce();
     public void OnJumpApex()   { }
 
     // --- Landing.anim ---

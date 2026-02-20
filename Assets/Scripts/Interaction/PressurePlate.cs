@@ -12,6 +12,18 @@ public class PressurePlate : MonoBehaviour
     [Tooltip("When true, only the soul (not the body) can activate this plate.")]
     [SerializeField] bool requireSoulOnly = false;
 
+    [Header("Visual Feedback")]
+    [Tooltip("The child Transform that holds the plate mesh. It will depress when the plate is active.")]
+    [SerializeField] Transform plateVisual;
+    [Tooltip("How many units the plate sinks when pressed.")]
+    [SerializeField] float pressDepth = 0.07f;
+    [Tooltip("Lerp speed for the press/release animation.")]
+    [SerializeField] float pressSpeed = 15f;
+    [Tooltip("Looping particle effect shown while the plate is idle (unactivated).")]
+    [SerializeField] ParticleSystem idleVFX;
+    [Tooltip("Particle effect played when the plate is first activated.")]
+    [SerializeField] ParticleSystem activatedVFX;
+
     [Header("Events")]
     public UnityEvent OnActivated;
     public UnityEvent OnDeactivated;
@@ -19,6 +31,31 @@ public class PressurePlate : MonoBehaviour
     public bool IsActive { get; private set; }
 
     private readonly HashSet<Collider> activators = new HashSet<Collider>();
+    private Vector3 plateRestLocalPos;
+
+    private void Start()
+    {
+        if (plateVisual != null)
+            plateRestLocalPos = plateVisual.localPosition;
+
+        OnActivated.AddListener(OnPlateActivated);
+        OnDeactivated.AddListener(OnPlateDeactivated);
+
+        if (idleVFX != null)
+            idleVFX.Play();
+    }
+
+    private void OnPlateActivated()
+    {
+        if (activatedVFX != null) activatedVFX.Play();
+        if (idleVFX != null)     idleVFX.Stop();
+    }
+
+    private void OnPlateDeactivated()
+    {
+        if (idleVFX != null)      idleVFX.Play();
+        if (activatedVFX != null) activatedVFX.Stop();
+    }
 
     private void Update()
     {
@@ -27,11 +64,24 @@ public class PressurePlate : MonoBehaviour
         activators.RemoveWhere(c => c == null || !c.gameObject.activeInHierarchy);
 
         bool active = activators.Count > 0;
-        if (active == IsActive) return;
+        if (active != IsActive)
+        {
+            IsActive = active;
+            if (IsActive) OnActivated.Invoke();
+            else          OnDeactivated.Invoke();
+        }
 
-        IsActive = active;
-        if (IsActive) OnActivated.Invoke();
-        else          OnDeactivated.Invoke();
+        UpdatePlateVisual();
+    }
+
+    private void UpdatePlateVisual()
+    {
+        if (plateVisual == null) return;
+
+        float targetY  = IsActive ? plateRestLocalPos.y - pressDepth : plateRestLocalPos.y;
+        Vector3 target = new Vector3(plateRestLocalPos.x, targetY, plateRestLocalPos.z);
+        plateVisual.localPosition = Vector3.Lerp(
+            plateVisual.localPosition, target, pressSpeed * Time.deltaTime);
     }
 
     private void OnTriggerEnter(Collider other)

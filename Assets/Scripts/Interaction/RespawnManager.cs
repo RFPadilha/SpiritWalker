@@ -38,6 +38,12 @@ public class RespawnManager : MonoBehaviour
     [Tooltip("Seconds after a respawn during which kill zones are ignored.")]
     [SerializeField] float respawnCooldown = 1f;
 
+    [Header("Level Start Fade")]
+    [Tooltip("When true, the screen starts black and fades in when the level loads.")]
+    [SerializeField] bool fadeInOnStart = true;
+    [Tooltip("Duration of the opening fade-in, in seconds.")]
+    [SerializeField] float startFadeInDuration = 1f;
+
     private Checkpoint activeCheckpoint;
     private Rigidbody  bodyRb;
     private bool       bodyDefaultIsKinematic;
@@ -67,6 +73,12 @@ public class RespawnManager : MonoBehaviour
 
         if (startingCheckpoint != null)
             RegisterCheckpoint(startingCheckpoint);
+
+        if (fadeInOnStart)
+        {
+            fadeImage.color = new Color(0f, 0f, 0f, 1f);
+            StartCoroutine(Fade(1f, 0f, startFadeInDuration));
+        }
     }
 
     private void OnDestroy()
@@ -146,6 +158,15 @@ public class RespawnManager : MonoBehaviour
         // 7. Start the post-respawn cooldown, then allow new respawns.
         cooldownTimer = respawnCooldown;
         isRespawning  = false;
+    }
+
+    /// <summary>
+    /// Fades the screen to black over <paramref name="duration"/> seconds.
+    /// Intended for use by LevelExit before loading the next scene.
+    /// </summary>
+    public IEnumerator FadeToBlack(float duration)
+    {
+        yield return StartCoroutine(Fade(fadeImage.color.a, 1f, duration));
     }
 
     private IEnumerator Fade(float from, float to, float duration)
