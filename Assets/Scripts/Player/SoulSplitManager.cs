@@ -344,6 +344,16 @@ public class SoulSplitManager : MonoBehaviour
     // -------------------------------------------------------------------------
 
     /// <summary>
+    /// If Soul Anchor is currently active, immediately triggers the body's return traversal
+    /// as though the anchor timer expired. Has no effect in any other state.
+    /// </summary>
+    public void TriggerAnchorReturn()
+    {
+        if (state == SoulState.SoulAnchored)
+            CompleteSoulAnchor();
+    }
+
+    /// <summary>
     /// Immediately cancels any active soul ability and returns to the Unified state.
     /// Safe to call from any state, including Traversing. Used by the respawn system.
     /// </summary>

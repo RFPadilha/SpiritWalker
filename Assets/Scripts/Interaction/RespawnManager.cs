@@ -113,6 +113,13 @@ public class RespawnManager : MonoBehaviour
         if (cooldownTimer > 0f) return;
         if (activeCheckpoint == null) return;
 
+        // Soul Anchor is active: snap the body back to the anchor instead of dying.
+        if (soulSplitManager.State == SoulSplitManager.SoulState.SoulAnchored)
+        {
+            soulSplitManager.TriggerAnchorReturn();
+            return;
+        }
+
         // Body is on rails during traversal — player cannot react. Skip.
         if (soulSplitManager.State == SoulSplitManager.SoulState.Traversing) return;
 
@@ -139,13 +146,22 @@ public class RespawnManager : MonoBehaviour
         yield return StartCoroutine(Fade(0f, 1f, fadeOutDuration));
         yield return new WaitForSecondsRealtime(holdDuration);
 
-        // 4. Teleport while the screen is black.
-        //    Body is still kinematic here, so setting the transform is clean.
+        // 4. Teleport while the screen is black, and reset any collapsed floors.
+        //    Both happen invisibly so the player never sees the snap.
         bodyRb.linearVelocity  = Vector3.zero;
         bodyRb.angularVelocity = Vector3.zero;
         playerBody.transform.SetPositionAndRotation(
             activeCheckpoint.SpawnPosition,
             activeCheckpoint.SpawnRotation);
+
+        foreach (var floor in FindObjectsByType<CollapsingFloor>(FindObjectsSortMode.None))
+            floor.ResetFloor();
+
+        foreach (var key in FindObjectsByType<KeyPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            key.ResetPickup();
+
+        foreach (var gate in FindObjectsByType<KeyGate>(FindObjectsSortMode.None))
+            gate.ResetGate();
 
         // 5. Restore body physics and reset the animator to a clean idle state.
         bodyRb.isKinematic = bodyDefaultIsKinematic;
